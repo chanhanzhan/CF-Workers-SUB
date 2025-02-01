@@ -1,8 +1,6 @@
-
-// 部署完成后在网址后面加上这个，获取自建节点和机场聚合节点，/?token=auto或/auto或
-
 let mytoken = 'auto';
 let guestToken = ''; //可以随便取，或者uuid生成，https://1024tools.com/uuid
+let guestTokens = ["ebc5e7b1-a472-4243-86ab-6d45a59cb673","eff14875-38e2-4c8a-ba40-659fdbce36f9","d7f706f1-0c17-4aef-a81a-1573430e0d64","24e09c8d-6a47-4954-a16f-e9facca3201c","6acad97-ba57-4c3b-8906-89931bb19752"]; // 可以存储多个guestToken
 let BotToken = ''; //可以为空，或者@BotFather中输入/start，/newbot，并关注机器人
 let ChatID = ''; //可以为空，或者@userinfobot中获取，/start
 let TG = 0; //小白勿动， 开发者专用，1 为推送所有的访问信息，0 为不推送订阅转换后端的访问信息与异常访问
@@ -51,8 +49,8 @@ export default {
 		currentDate.setHours(0, 0, 0, 0);
 		const timeTemp = Math.ceil(currentDate.getTime() / 1000);
 		const fakeToken = await MD5MD5(`${mytoken}${timeTemp}`);
-		guestToken = env.GUESTTOKEN || env.GUEST || guestToken;
-		if (!guestToken) guestToken = await MD5MD5(mytoken);
+		guestTokens = env.GUESTTOKENS ? env.GUESTTOKENS.split(',') : guestTokens;
+		if (!guestTokens.length) guestTokens = [await MD5MD5(mytoken)];
 		const 访客订阅 = guestToken;
 		//console.log(`${fakeUserID}\n${fakeHostName}`); // 打印fakeID
 
@@ -61,7 +59,7 @@ export default {
 		let expire = Math.floor(timestamp / 1000);
 		SUBUpdateTime = env.SUBUPTIME || SUBUpdateTime;
 
-		if (!([mytoken, fakeToken, 访客订阅].includes(token) || url.pathname == ("/" + mytoken) || url.pathname.includes("/" + mytoken + "?"))) {
+		if (!([mytoken, fakeToken, ...guestTokens].includes(token) || url.pathname == ("/" + mytoken) || url.pathname.includes("/" + mytoken + "?"))) {
 			if (TG == 1 && url.pathname !== "/" && url.pathname !== "/favicon.ico") await sendMessage(`#异常访问 ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${userAgent}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
 			if (env.URL302) return Response.redirect(env.URL302, 302);
 			else if (env.URL) return await proxyURL(env.URL, url);
